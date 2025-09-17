@@ -2,6 +2,8 @@
 
 This repository contains 3 different projects to scrape, organize and then explore a multitude of mental health reports from DEIS
 
+All spatial data is stores as WKB and is in EPSG:4326
+
 ## Data sources
 - communes: 
     - geometry: https://www.bcn.cl/siit/mapas_vectoriales (División comunal: polígonos de las comunas de Chile) (https://www.bcn.cl/obtienearchivo?id=repositorio/10221/10396/2/Comunas.zip) (download date: 2024-01-19)

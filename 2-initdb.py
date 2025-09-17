@@ -1,6 +1,9 @@
 import sqlite3
+import os
 
 # connect to the database
+os.unlink("db.sqlite3")
+
 conn = sqlite3.connect("db.sqlite3")
 cursor = conn.cursor()
 
@@ -22,8 +25,7 @@ CREATE TABLE establishment (
     id INTEGER PRIMARY KEY,
     name TEXT NOT NULL,
     address TEXT NOT NULL,
-    lat REAL,
-    lon REAL,
+    geometry BLOB NOT NULL,
     commune_id INTEGER NOT NULL,
     FOREIGN KEY (commune_id) REFERENCES commune (id)
 )
@@ -37,6 +39,19 @@ CREATE TABLE report (
     description TEXT NOT NULL,
     category TEXT NOT NULL,
     misc TEXT
+)
+""")
+
+cursor.execute("""
+create table aqi
+(
+    id INTEGER PRIMARY KEY,
+    contaminant     TEXT not null,
+    aqi             REAL not null,
+    datetime        INTEGER not null,
+    geometry        BLOB NOT NULL,
+    commune_id      INTEGER not null,
+    FOREIGN KEY (commune_id) REFERENCES commune (id)
 )
 """)
 

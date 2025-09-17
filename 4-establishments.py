@@ -6,7 +6,8 @@ import pandas as pd
 import re
 import sqlite3
 from lib.clean import clean_string
-from unidecode import unidecode
+import geopandas
+from shapely import wkb
 
 conn = sqlite3.connect("db.sqlite3")
 cursor = conn.cursor()
@@ -24,23 +25,20 @@ addresses["Nombre Oficial"] = addresses["Nombre Oficial"].apply(clean_string)
 addresses["Nombre Comuna"] = addresses["Nombre Comuna"].apply(clean_string)
 
 # replace commas with dots
-addresses['LATITUD      [Grados decimales]'] = addresses['LATITUD      [Grados decimales]'].apply(lambda x: re.sub(',', '.', x))
-addresses['LONGITUD [Grados decimales]'] = addresses['LONGITUD [Grados decimales]'].apply(lambda x: re.sub(',', '.', x))
+addresses['lat'] = pd.to_numeric(addresses['LATITUD      [Grados decimales]'].apply(lambda x: re.sub(',', '.', x)), errors='coerce')
+addresses['lon'] = pd.to_numeric(addresses['LONGITUD [Grados decimales]'].apply(lambda x: re.sub(',', '.', x)), errors='coerce')
+
+addresses["geometry"] = geopandas.points_from_xy(addresses['lon'], addresses['lat'], crs="EPSG:4326")
+addresses["geometry"] = addresses["geometry"].apply(wkb.dumps)
+
+print(addresses)
 
 # insert 
 for address in addresses.iterrows():
     name = address[1]['Nombre Oficial']
     street = f"{address[1]['Dirección']}, {address[1]['Número']}, {address[1]['Nombre Región']}"
-    latitude = address[1]['LATITUD      [Grados decimales]']
-    longitude = address[1]['LONGITUD [Grados decimales]']
 
-    try:
-        # ensure that they are floats, some say 'No aplica' which we dont care about
-        latitude = float(latitude)
-        longitude = float(longitude)
-    except:
-        latitude = None
-        longitude = None
+    geometry = address[1]["geometry"]
 
     comuna = address[1]['Nombre Comuna']
     print(comuna)
@@ -48,6 +46,6 @@ for address in addresses.iterrows():
     comuna_id = cursor.fetchone()
     comuna_id = comuna_id[0]
 
-    cursor.execute("INSERT INTO establishment (name, address, lat, lon, commune_id) VALUES (?, ?, ?, ?, ?)", (name, street, latitude, longitude, comuna_id))
+    cursor.execute("INSERT INTO establishment (name, address, geometry, commune_id) VALUES (?, ?, ?, ?)", (name, street, geometry, comuna_id))
     
 conn.commit()

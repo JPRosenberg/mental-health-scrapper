@@ -1,6 +1,5 @@
-
 import pandas as pd
-import simdjson
+import json
 import sqlite3
 from glob import glob
 from lib.clean import clean_string
@@ -58,7 +57,7 @@ for path in files:
     report = filename.split("-")[-1].split(".")[0]
     
     # load json
-    response = simdjson.load(f) # type: ignore
+    response = json.load(f) # type: ignore
 
     # get column names
     variables = response["results"][0]["variables"]

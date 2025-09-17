@@ -15,6 +15,8 @@ from unidecode import unidecode
 geopandas.options.io_engine = "pyogrio"
 
 communes = geopandas.read_file('data/communes/geometry/comunas.shp')
+# geometry is in 3857
+communes = communes.to_crs(4326)
 communes["wkb"] = communes.geometry.to_wkb()
 communes["Comuna"] = communes["Comuna"].apply(clean_string)
 communes["Provincia"] = communes["Provincia"].apply(clean_string)
