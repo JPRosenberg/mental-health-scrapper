@@ -15,7 +15,8 @@ CREATE TABLE commune (
     geometry BLOB NOT NULL,
     region TEXT NOT NULL,
     province TEXT NOT NULL,
-    population INTEGER NOT NULL
+    population INTEGER NOT NULL,
+    income INTEGER
 )
 """)
 cursor.execute("CREATE INDEX commune_province_index ON commune (province);")
@@ -43,17 +44,19 @@ CREATE TABLE report (
 """)
 
 cursor.execute("""
-create table aqi
+create table contaminant
 (
     id INTEGER PRIMARY KEY,
     contaminant     TEXT not null,
-    aqi             REAL not null,
-    datetime        INTEGER not null,
+    concentration   REAL not null,
+    datetime       INTEGER not null,
     geometry        BLOB NOT NULL,
     commune_id      INTEGER not null,
     FOREIGN KEY (commune_id) REFERENCES commune (id)
 )
 """)
+cursor.execute("CREATE INDEX contaminant_contaminant_index ON contaminant (contaminant);")
+cursor.execute("CREATE INDEX contaminant_datetime_index ON contaminant (datetime);")
 
 cursor.execute("""
 create table data
@@ -67,8 +70,6 @@ create table data
     establishment_id INTEGER    not null    references establishment
 )
 """)
-
-# indexes
 cursor.execute("CREATE INDEX data_report_id_index ON data (report_id);")
 cursor.execute("CREATE INDEX data_year_commune_id_index ON data (year, commune_id);")
 cursor.execute("CREATE INDEX data_year_index ON data (year);")

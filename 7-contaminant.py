@@ -6,18 +6,18 @@ from shapely import wkb
 
 conn = sqlite3.connect("db.sqlite3")
 cursor = conn.cursor()
-cursor.execute('DELETE FROM aqi')
+cursor.execute('DELETE FROM contaminant')
 
 contaminants = polars.read_csv("data/aqi.csv")
 contaminants = contaminants.select(
     contaminant = polars.col("contaminante").cast(polars.String),
-    aqi = polars.col("registros_validados").cast(polars.Float32, strict=False),
+    concentration = polars.col("registros_validados").cast(polars.Float32, strict=False),
     lat = polars.col("latitude").cast(polars.Float64),
     lon = polars.col("longitude").cast(polars.Float64),
     datetime = polars.col("fecha").cast(polars.Date)
 ).drop_nulls().to_pandas()
 
-contaminants = geopandas.GeoDataFrame(contaminants[["contaminant", "aqi", "datetime"]], geometry=geopandas.points_from_xy(contaminants["lon"], contaminants["lat"], crs="EPSG:4326"))
+contaminants = geopandas.GeoDataFrame(contaminants[["contaminant", "concentration", "datetime"]], geometry=geopandas.points_from_xy(contaminants["lon"], contaminants["lat"], crs="EPSG:4326"))
 
 # load communes
 communes = cursor.execute("""
@@ -36,13 +36,13 @@ print(contaminants)
 
 for row in contaminants.iterrows():
     contaminant = row[1]["contaminant"]
-    aqi = row[1]["aqi"]
+    concentration = row[1]["concentration"]
     datetime = int(row[1]["datetime"].timestamp())
     geometry = row[1]["wkb"]
     commune_id = row[1]["id"]
 
     cursor.execute("""
-    INSERT INTO aqi (contaminant, aqi, datetime, geometry, commune_id) VALUES (?, ?, ?, ?, ?)
-    """, (contaminant, aqi, datetime, geometry, commune_id))
+    INSERT INTO contaminant (contaminant, concentration, datetime, geometry, commune_id) VALUES (?, ?, ?, ?, ?)
+    """, (contaminant, concentration, datetime, geometry, commune_id))
 
 conn.commit()

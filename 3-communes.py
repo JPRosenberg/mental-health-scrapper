@@ -14,6 +14,64 @@ from unidecode import unidecode
 
 geopandas.options.io_engine = "pyogrio"
 
+incomes = {
+    "Santiago": 1001246,
+    "Cerrillos": 822318,
+    "Cerro Navia": 626151,
+    "Conchalí": 720532,
+    "El Bosque": 691029,
+    "Estación Central": 740039,
+    "Huechuraba": 1265786,
+    "Independencia": 718622,
+    "La Cisterna": 863400,
+    "La Florida": 995239,
+    "La Granja": 679636,
+    "La Pintana": 595253,
+    "La Reina": 1587617,
+    "Las Condes": 1935473,
+    "Lo Barnechea": 1781918,
+    "Lo Espejo": 629630,
+    "Lo Prado": 687574,
+    "Macul": 1036119,
+    "Maipú": 935903,
+    "Ñuñoa": 1568029,
+    "Pedro Aguirre Cerda": 707589,
+    "Peñalolén": 1025659,
+    "Providencia": 1797751,
+    "Pudahuel": 844696,
+    "Quilicura": 863021,
+    "Quinta Normal": 754050,
+    "Recoleta": 748137,
+    "Renca": 709407,
+    "San Joaquín": 772440,
+    "San Miguel": 1158765,
+    "San Ramón": 657161,
+    "Vitacura": 2128023,
+    "Puente Alto": 864959,
+    "Pirque": 930518,
+    "San José de Maipo": 952711,
+    "Colina": 1281069,
+    "Lampa": 961260,
+    "Tiltil": 866047,
+    "San Bernardo": 785232,
+    "Buin": 889886,
+    "Calera de Tango": 882261,
+    "Paine": 694440,
+    "Melipilla": 702238,
+    "Alhué": 828121,
+    "Curacaví": 799470,
+    "María Pinto": 713639,
+    "San Pedro": 697131,
+    "Talagante": 869862,
+    "El Monte": 719317,
+    "Isla de Maipo": 803545,
+    "Padre Hurtado": 873036,
+    "Peñaflor": 879562
+}
+
+# clean incomes
+incomes = {clean_string(k): v for k, v in incomes.items()}
+
 communes = geopandas.read_file('data/communes/geometry/comunas.shp')
 # geometry is in 3857
 communes = communes.to_crs(4326)
@@ -34,11 +92,12 @@ cursor.execute('DELETE FROM commune')
 # insert
 for comuna in communes.iterrows():
     name = clean_string(comuna[1]['Comuna'])
+    income = incomes.get(name, None)
     region   = unidecode(comuna[1]['Region'])
     province = unidecode(comuna[1]['Provincia'])
     geometry = comuna[1]['wkb']
 
-    cursor.execute('INSERT INTO commune (name, geometry, region, province, population) VALUES (?, ?, ?, ?, 0)', (name, geometry, region, province))
+    cursor.execute('INSERT INTO commune (name, geometry, region, province, population, income) VALUES (?, ?, ?, ?, 0, ?)', (name, geometry, region, province, income))
 
 # format population csv
 population = pd.read_csv("data/communes/population/pop.csv", sep=";")
