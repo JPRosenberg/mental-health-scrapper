@@ -4,8 +4,9 @@ import os
 import json 
 import uuid
 
-xCsrfToken = "194d7bff-3cf2-451c-aec8-014b76bf585b"
-jSessionID = "00F57A9627E2B7BC28A5F15A6001CA2C.report-data-192-168-173-202"
+# https://informesdeis.minsal.cl/SASVisualAnalytics/?reportUri=/reports/reports/ad0c03ad-ee7a-4da4-bcc7-73d6e12920cf&sso_guest=true&reportViewOnly=true&reportContextBar=false&sas-welcome=false
+xCsrfToken = ""
+jSessionID = ""
 
 # load the payloads
 class Report:
@@ -42,7 +43,11 @@ response = requests.post(
         "Cookie": "JSESSIONID=" + jSessionID
     },
 )
-executorID: str = response.json()["id"]
+try:
+    executorID: str = response.json()["id"]
+except:
+    print(response.text)
+    raise Exception("failed to get executor id")
 
 # main scrape
 print("scraping")
@@ -86,17 +91,33 @@ for commune in communes:
             url += "&sequence=" + str(sequence)
 
             # ask for the report
-            response = requests.post(
-                url,
-                headers={
-                    "content-type": "application/vnd.sas.report.query+json",
-                    "x-csrf-token": xCsrfToken,
-                },
-                cookies={
-                    "JSESSIONID": jSessionID
-                },
-                json = payload,
-            )
+            # retry once if it fails
+            try:
+                response = requests.post(
+                    url,
+                    headers={
+                        "content-type": "application/vnd.sas.report.query+json",
+                        "x-csrf-token": xCsrfToken,
+                    },
+                    cookies={
+                        "JSESSIONID": jSessionID
+                    },
+                    json = payload,
+                )
+            except requests.exceptions.RequestException as e:
+                print("request failed, retrying...")
+                response = requests.post(
+                    url,
+                    headers={
+                        "content-type": "application/vnd.sas.report.query+json",
+                        "x-csrf-token": xCsrfToken,
+                    },
+                    cookies={
+                        "JSESSIONID": jSessionID
+                    },
+                    json = payload,
+                )
+
             content = json.loads(response.text)["results"]["content"]
             content = json.loads(content)
 
