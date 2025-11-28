@@ -12,6 +12,7 @@ All spatial data is stores as WKB and is in EPSG:4326
 - reports: 0-scrapper, from two reports
     - reporteria adolescente: https://informesdeis.minsal.cl/SASVisualAnalytics/?reportUri=/reports/reports/0b3119f0-db06-4f10-a9cd-61092b5790bc&sectionIndex=12&sso_guest=true&reportViewOnly=true&reportContextBar=false&sas-welcome=false
     - reporteria salud mental: https://informesdeis.minsal.cl/SASVisualAnalytics/?reportUri=/reports/reports/ad0c03ad-ee7a-4da4-bcc7-73d6e12920cf&sso_guest=true&reportViewOnly=true&reportContextBar=false&sas-welcome=false
+- air quality: https://github.com/cj0915/Santiago-Air-Pollution-Data/tree/main
     
 # Projects
 
